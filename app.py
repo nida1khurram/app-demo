@@ -347,8 +347,12 @@ def home_page():
     
     st.markdown("""
     <style>
-                /* Hide the GitHub icon in the Streamlit toolbar */
-    [data-testid="stToolbar"] > div > a {
+    /* Target the GitHub icon link in the Streamlit toolbar */
+    div[data-testid="stToolbar"] a[href*="https://github.com/nida1khurram/app-demo"] {
+        display: none !important;
+    }
+    /* Optional: Hide the entire toolbar container if needed */
+    div[data-testid="stToolbar"] > div > div > a {
         display: none !important;
     }
                 /* Hide the GitHub icon in the Streamlit toolbar */
