@@ -10,6 +10,9 @@ from PIL import Image
 import base64
 import re
 
+from streamlit import config
+config.set_option("server.showGitHubLink", False)
+
 # Initialize or load files
 CSV_FILE = "fees_data.csv"
 USER_DB_FILE = "users.json"
@@ -348,9 +351,7 @@ def home_page():
     st.markdown("""
     <style>
     /* Target the GitHub icon link in the Streamlit toolbar */
-.stDeployButton {
-        visibility: hidden;
-    }
+.stDeployButton{display:none;}
     /* Hide the GitHub icon in the Streamlit toolbar */
                 
                 
