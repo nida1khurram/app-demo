@@ -348,9 +348,9 @@ def home_page():
     st.markdown("""
     <style>
     /* Target the GitHub icon link in the Streamlit toolbar */
-  .stApp a[title="View on GitHub"] {
-    visibility: hidden;
-}
+.stDeployButton {
+        visibility: hidden;
+    }
     /* Hide the GitHub icon in the Streamlit toolbar */
                 
                 
