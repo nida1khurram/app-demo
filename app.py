@@ -10,8 +10,57 @@ from PIL import Image
 import base64
 import re
 
-from streamlit import config
-config.set_option("server.showGitHubLink", False)
+# Hide GitHub icon and other Streamlit elements
+def hide_streamlit_elements():
+    """Hide GitHub icon and other Streamlit UI elements"""
+    st.markdown("""
+    <style>
+    /* Hide GitHub icon */
+    .stActionButton {
+        display: none !important;
+    }
+    
+    /* Hide the GitHub icon specifically */
+    div[data-testid="stToolbar"] {
+        display: none !important;
+    }
+    
+    /* Hide the main menu */
+    #MainMenu {
+        display: none !important;
+    }
+    
+    /* Hide Streamlit footer */
+    footer {
+        display: none !important;
+    }
+    
+    /* Hide the header */
+    header {
+        display: none !important;
+    }
+    
+    /* Additional hiding for GitHub icon */
+    .stApp > header {
+        display: none !important;
+    }
+    
+    /* Hide the "Deploy" button and GitHub icon */
+    .stDeployButton {
+        display: none !important;
+    }
+    
+    /* Hide the entire toolbar */
+    section[data-testid="stSidebar"] > div:first-child {
+        margin-top: -100px;
+    }
+    
+    /* Custom styling for better appearance */
+    .stApp {
+        margin-top: -80px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Initialize or load files
 CSV_FILE = "fees_data.csv"
@@ -78,7 +127,7 @@ def authenticate_user(username, password):
     try:
         with open(USER_DB_FILE, 'r') as f:
             users = json.load(f)
-        
+            
         if username in users:
             if verify_password(users[username]['password'], password):
                 st.session_state.authenticated = True
@@ -105,7 +154,6 @@ def authenticate_user(username, password):
         return False
 
 def create_user(username, password, email, is_admin=False):
-    
     """Create a new user account with email and 1-month trial"""
     try:
         if os.path.exists(USER_DB_FILE):
@@ -113,21 +161,17 @@ def create_user(username, password, email, is_admin=False):
                 users = json.load(f)
         else:
             users = {}
-        
-        # if username in users:
-        #     return False, "Username already exists"
-        
+            
         if not validate_email(email):
             return False, "Please use a valid Gmail address (e.g., username@gmail.com)"
-        
+            
         # Check for email uniqueness
         for user in users.values():
             if 'email' in user and user['email'] == email:
                 return False, "This Gmail address is already registered. Please use a different Gmail address or log in."
-        
+            
         trial_start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        trial_end = (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d %H:%M:%S")
-        # trial_end = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")  # Line 104: Changed from 
+        trial_end = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
         
         users[username] = {
             "password": hash_password(password),
@@ -150,8 +194,8 @@ def initialize_csv():
     if not os.path.exists(CSV_FILE):
         columns = [
             "ID", "Student Name", "Class Category", "Class Section", "Month", 
-            "Monthly Fee", "Annual Charges", "Admission Fee", 
-            "Received Amount", "Payment Method", "Date", "Signature", 
+            "Monthly Fee", "Annual Charges", "Admission Fee",
+            "Received Amount", "Payment Method", "Date", "Signature",
             "Entry Timestamp", "Academic Year"
         ]
         pd.DataFrame(columns=columns).to_csv(CSV_FILE, index=False)
@@ -160,8 +204,8 @@ def initialize_csv():
             df = pd.read_csv(CSV_FILE)
             expected_columns = [
                 "ID", "Student Name", "Class Category", "Class Section", "Month", 
-                "Monthly Fee", "Annual Charges", "Admission Fee", 
-                "Received Amount", "Payment Method", "Date", "Signature", 
+                "Monthly Fee", "Annual Charges", "Admission Fee",
+                "Received Amount", "Payment Method", "Date", "Signature",
                 "Entry Timestamp", "Academic Year"
             ]
             
@@ -211,8 +255,8 @@ def load_data():
         
         expected_columns = [
             "ID", "Student Name", "Class Category", "Class Section", "Month", 
-            "Monthly Fee", "Annual Charges", "Admission Fee", 
-            "Received Amount", "Payment Method", "Date", "Signature", 
+            "Monthly Fee", "Annual Charges", "Admission Fee",
+            "Received Amount", "Payment Method", "Date", "Signature",
             "Entry Timestamp", "Academic Year"
         ]
         
@@ -348,13 +392,11 @@ def home_page():
     """Display beautiful home page with logo and school name at the very top and about section in a dropdown"""
     st.set_page_config(page_title="School Fees Management", layout="wide", page_icon="🏫")
     
+    # Hide GitHub icon and other elements
+    hide_streamlit_elements()
+    
     st.markdown("""
     <style>
-    /* Target the GitHub icon link in the Streamlit toolbar */
-.stDeployButton{display:none;}
-    /* Hide the GitHub icon in the Streamlit toolbar */
-                
-                
     .main {
         background-color: #f8f9fa;
     }
@@ -489,7 +531,7 @@ def home_page():
     # School Name and Subtitle
     st.markdown('<h1 class="title-text">British School of Karachi </h1>', unsafe_allow_html=True)
     st.markdown('<h1 class="title-text">Fees Management System</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle-text">Streamline your school\'s fee collection and tracking process with a 1-month free trial!</p>', unsafe_allow_html=True) 
+    st.markdown('<p class="subtitle-text">Streamline your school\'s fee collection and tracking process with a 1-month free trial!</p>', unsafe_allow_html=True)
     
     # Feature Cards
     col1, col2, col3 = st.columns(3)
@@ -576,9 +618,8 @@ def home_page():
                     <li>Data saved securely in files (no risk of losing records).</li>
                 </ul>
                 <p class="about-list"><strong>Free 1-Month Trial</strong></p>
-            
                 <ul class="about-list">
-                    <li>New users get 30 days free to test all features.</li> 
+                    <li>New users get 30 days free to test all features.</li>
                 </ul>
                 """,
                 unsafe_allow_html=True
@@ -634,7 +675,7 @@ def home_page():
         st.markdown(
             """
             <p class="about-text">
-                Try the 1-month free trial – no payment needed!  
+                Try the 1-month free trial – no payment needed!
             </p>
             """,
             unsafe_allow_html=True
@@ -645,15 +686,18 @@ def home_page():
     st.markdown("""
     <div style="text-align: center; margin-top: 3rem; color: #7f8c8d; font-size: 0.8rem;">
         <p>© 2025 School Fees Management System | Developed with ❤️ for educational institutions</p>
-        <p>Start your 1-month free trial today!</p> 
+        <p>Start your 1-month free trial today!</p>
     </div>
     """, unsafe_allow_html=True)
 
 def login_page():
     """Display login page with signup option and handle authentication"""
+    # Hide GitHub icon and other elements
+    hide_streamlit_elements()
+    
     st.title("🔒 School Fees Management - Login / Sign Up")
     
-    st.markdown("**New users, including admins, must sign up with their Gmail address to start a 1-month free trial.**") 
+    st.markdown("**New users, including admins, must sign up with their Gmail address to start a 1-month free trial.**")
     st.markdown("**⚠️ Please use the same Gmail address you used to access this app.**")
     
     tabs = st.tabs(["Sign Up", "Login"])
@@ -670,7 +714,7 @@ def login_page():
             if show_password:
                 st.text(f"Password will be: {new_password if new_password else '[not set]'}")
             
-            signup_submit = st.form_submit_button("Sign Up (Start 1-month Free Trial)") 
+            signup_submit = st.form_submit_button("Sign Up (Start 1-month Free Trial)")
             
             if signup_submit:
                 if not new_username or not new_password or not new_email:
@@ -680,7 +724,7 @@ def login_page():
                 else:
                     success, message = create_user(new_username, new_password, new_email, is_admin)
                     if success:
-                        st.success(f"{message} Your 1-month free trial has started!") 
+                        st.success(f"{message} Your 1-month free trial has started!")
                         st.info(f"User '{new_username}' created with email: {new_email}")
                         if authenticate_user(new_username, new_password):
                             st.rerun()
@@ -700,259 +744,13 @@ def login_page():
                 else:
                     st.error("Invalid username or password")
 
-def user_management():
-    """Admin interface for user management"""
-    st.header("👥 User Management")
-    
-    with st.expander("➕ Create New User"):
-        with st.form("create_user_form"):
-            new_username = st.text_input("New Username*")
-            new_email = st.text_input("Gmail Address*", placeholder="yourname@gmail.com", help="Only Gmail addresses are allowed.")
-            new_password = st.text_input("New Password*", type="password", key="new_pass")
-            confirm_password = st.text_input("Confirm Password*", type="password", key="confirm_pass")
-            is_admin = st.checkbox("Admin User")
-            show_password = st.checkbox("Show Password")
-            
-            if show_password:
-                st.text(f"Password will be: {new_password if new_password else '[not set]'}")
-            
-            submit = st.form_submit_button("Create User")
-            
-            if submit:
-                if not new_username or not new_password or not new_email:
-                    st.error("Username, password, and Gmail address are required!")
-                elif new_password != confirm_password:
-                    st.error("Passwords do not match!")
-                else:
-                    success, message = create_user(new_username, new_password, new_email, is_admin)
-                    if success:
-                        st.success(message)
-                        st.info(f"User '{new_username}' created with email: {new_email}, Trial: 1-month trial started")  # Line 524: Changed from 1-month to 3-hour trial
-                    else:
-                        st.error(message)
-
-    with st.expander("👀 View All Users"):
-        try:
-            with open(USER_DB_FILE, 'r') as f:
-                users = json.load(f)
-                
-            user_data = []
-            for username, details in users.items():
-                trial_remaining = "N/A"
-                if details.get('trial_end'):
-                    trial_end = datetime.strptime(details['trial_end'], "%Y-%m-%d %H:%M:%S")
-                    remaining = trial_end - datetime.now()
-                    trial_remaining = format_trial_remaining(remaining) if remaining.total_seconds() > 0 else "Expired"
-                
-                user_data.append({
-                    "Username": username,
-                    "Email": details.get('email', 'N/A'),
-                    "Admin": "Yes" if details.get('is_admin', False) else "No",
-                    "Created At": details.get('created_at', "Unknown"),
-                    "Trial Remaining": trial_remaining
-                })
-            
-            user_df = pd.DataFrame(user_data)
-            st.dataframe(user_df)
-            
-            st.subheader("Delete User")
-            if not user_df.empty:
-                user_to_delete = st.selectbox(
-                    "Select User to Delete",
-                    user_df['Username'].tolist(),
-                    key="delete_user_select"
-                )
-                
-                if st.button("🗑️ Delete User", key="delete_user_btn"):
-                    if user_to_delete == st.session_state.current_user:
-                        st.error("You cannot delete your own account!")
-                    else:
-                        try:
-                            with open(USER_DB_FILE, 'r') as f:
-                                users = json.load(f)
-                            
-                            if user_to_delete in users:
-                                del users[user_to_delete]
-                                
-                                with open(USER_DB_FILE, 'w') as f:
-                                    json.dump(users, f)
-                                
-                                st.success(f"User '{user_to_delete}' deleted successfully!")
-                                st.rerun()
-                            else:
-                                st.error("User not found!")
-                        except Exception as e:
-                            st.error(f"Error deleting user: {str(e)}")
-
-        except Exception as e:
-            st.error(f"Error loading users: {str(e)}")
-
-    with st.expander("🔑 Reset Password"):
-        try:
-            with open(USER_DB_FILE, 'r') as f:
-                users = json.load(f)
-            
-            users_list = list(users.keys())
-            selected_user = st.selectbox("Select User", users_list, key="reset_user_select")
-            
-            with st.form("reset_password_form"):
-                new_password = st.text_input("New Password*", type="password", key="reset_pass")
-                confirm_password = st.text_input("Confirm Password*", type="password", key="reset_confirm")
-                show_password = st.checkbox("Show New Password")
-                
-                if show_password:
-                    st.text(f"New password will be: {new_password if new_password else '[not set]'}")
-                
-                reset_btn = st.form_submit_button("Reset Password")
-                
-                if reset_btn:
-                    if not new_password:
-                        st.error("Password cannot be empty!")
-                    elif new_password != confirm_password:
-                        st.error("Passwords do not match!")
-                    else:
-                        users[selected_user]['password'] = hash_password(new_password)
-                        with open(USER_DB_FILE, 'w') as f:
-                            json.dump(users, f)
-                        st.success(f"Password for {selected_user} reset successfully!")
-                        st.info(f"New password: {new_password}")
-        except Exception as e:
-            st.error(f"Error resetting password: {str(e)}")
-
-def set_student_fees():
-    """Admin interface to set fees for individual students"""
-    st.header("💸 Set Student Fees")
-    
-    CLASS_CATEGORIES = [
-        "Nursery", "KGI", "KGII", 
-        "Class 1", "Class 2", "Class 3", "Class 4", "Class 5",
-        "Class 6", "Class 7", "Class 8", "Class 9", "Class 10 (Matric)"
-    ]
-    
-    with st.expander("➕ Set Fees for a Student"):
-        with st.form("set_fees_form"):
-            col1, col2 = st.columns(2)
-            with col1:
-                student_name = st.text_input("Student Name*", placeholder="Full name")
-            with col2:
-                class_category = st.selectbox("Class Category*", CLASS_CATEGORIES)
-            
-            monthly_fee = st.number_input("Monthly Fee*", min_value=0, value=2000, step=100)
-            annual_charges = st.number_input("Annual Charges*", min_value=0, value=5000, step=100)
-            admission_fee = st.number_input("Admission Fee*", min_value=0, value=1000, step=100)
-            
-            submit = st.form_submit_button("💾 Save Fee Settings")
-            
-            if submit:
-                if not student_name or not class_category:
-                    st.error("Please fill all required fields (*)")
-                else:
-                    student_id = generate_student_id(student_name, class_category)
-                    fees_data = load_student_fees()
-                    
-                    fees_data[student_id] = {
-                        "student_name": student_name,
-                        "class_category": class_category,
-                        "monthly_fee": monthly_fee,
-                        "annual_charges": annual_charges,
-                        "admission_fee": admission_fee,
-                        "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    }
-                    
-                    if save_student_fees(fees_data):
-                        st.success(f"Fee settings saved for {student_name} ({class_category})")
-                        st.rerun()
-                    else:
-                        st.error("Failed to save fee settings")
-
-    with st.expander("👀 View All Student Fees"):
-        fees_data = load_student_fees()
-        if not fees_data:
-            st.info("No student fees settings found")
-        else:
-            fee_records = [
-                {
-                    "Student ID": student_id,
-                    "Student Name": details["student_name"],
-                    "Class": details["class_category"],
-                    "Monthly Fee": format_currency(details["monthly_fee"]),
-                    "Annual Charges": format_currency(details["annual_charges"]),
-                    "Admission Fee": format_currency(details["admission_fee"]),
-                    "Updated At": details["updated_at"]
-                }
-                for student_id, details in fees_data.items()
-            ]
-            fee_df = pd.DataFrame(fee_records)
-            st.dataframe(fee_df, use_container_width=True)
-            
-            st.subheader("Edit/Delete Fee Settings")
-            if not fee_df.empty:
-                student_to_edit = st.selectbox(
-                    "Select Student to Edit/Delete",
-                    fee_df["Student ID"].tolist(),
-                    format_func=lambda x: f"{fees_data[x]['student_name']} - {fees_data[x]['class_category']}"
-                )
-                
-                with st.form("edit_fees_form"):
-                    student_details = fees_data[student_to_edit]
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        edit_name = st.text_input("Student Name*", value=student_details["student_name"])
-                    with col2:
-                        edit_class = st.selectbox("Class Category*", CLASS_CATEGORIES, 
-                                                 index=CLASS_CATEGORIES.index(student_details["class_category"]))
-                    
-                    edit_monthly_fee = st.number_input("Monthly Fee*", min_value=0, 
-                                                      value=int(student_details["monthly_fee"]), step=100)
-                    edit_annual_charges = st.number_input("Annual Charges*", min_value=0, 
-                                                         value=int(student_details["annual_charges"]), step=100)
-                    edit_admission_fee = st.number_input("Admission Fee*", min_value=0, 
-                                                        value=int(student_details["admission_fee"]), step=100)
-                    
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        update_btn = st.form_submit_button("🔄 Update Fees")
-                    with col2:
-                        delete_btn = st.form_submit_button("🗑️ Delete Fees")
-                    
-                    if update_btn:
-                        if not edit_name or not edit_class:
-                            st.error("Please fill all required fields (*)")
-                        else:
-                            new_student_id = generate_student_id(edit_name, edit_class)
-                            fees_data = load_student_fees()
-                            
-                            if new_student_id != student_to_edit:
-                                fees_data.pop(student_to_edit, None)
-                            
-                            fees_data[new_student_id] = {
-                                "student_name": edit_name,
-                                "class_category": edit_class,
-                                "monthly_fee": edit_monthly_fee,
-                                "annual_charges": edit_annual_charges,
-                                "admission_fee": edit_admission_fee,
-                                "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            }
-                            
-                            if save_student_fees(fees_data):
-                                st.success(f"Fee settings updated for {edit_name} ({edit_class})")
-                                st.rerun()
-                            else:
-                                st.error("Failed to update fee settings")
-                    
-                    if delete_btn:
-                        fees_data = load_student_fees()
-                        if student_to_edit in fees_data:
-                            del fees_data[student_to_edit]
-                            if save_student_fees(fees_data):
-                                st.success("Fee settings deleted successfully")
-                                st.rerun()
-                            else:
-                                st.error("Failed to delete fee settings")
-
 def main_app():
     """Main application after login"""
     st.set_page_config(page_title="School Fees Management", layout="wide")
+    
+    # Hide GitHub icon and other elements
+    hide_streamlit_elements()
+    
     st.title("📚 School Fees Management System")
     
     # Display trial status in sidebar
@@ -1023,12 +821,13 @@ def main_app():
                     index=CLASS_CATEGORIES.index(st.session_state.last_class_category) if st.session_state.last_class_category in CLASS_CATEGORIES else 0,
                     key=f"class_category_{st.session_state.form_key}"
                 )
-                class_section = st.text_input(
-                    "Class Section", 
-                    placeholder="A, B, etc. (if applicable)", 
-                    value=st.session_state.last_class_section,
-                    key=f"class_section_{st.session_state.form_key}"
-                )
+            
+            class_section = st.text_input(
+                "Class Section", 
+                placeholder="A, B, etc. (if applicable)", 
+                value=st.session_state.last_class_section,
+                key=f"class_section_{st.session_state.form_key}"
+            )
             
             # Add a button to update student data
             update_btn = st.form_submit_button("🔍 Check Student Records")
@@ -1116,11 +915,11 @@ def main_app():
                     else:
                         st.markdown("All months paid")
             
-            payment_date = st.date_input("Payment Date", value=datetime.now(), 
+            payment_date = st.date_input("Payment Date", value=datetime.now(),
                                        key=f"payment_date_{st.session_state.form_key}")
             academic_year = get_academic_year(payment_date)
             
-            fee_type = st.radio("Select Fee Type*", 
+            fee_type = st.radio("Select Fee Type*",
                               ["Monthly Fee", "Annual Charges", "Admission Fee"],
                               horizontal=True,
                               key=f"fee_type_{st.session_state.form_key}")
@@ -1303,396 +1102,25 @@ def main_app():
                         st.success("✅ Fee record(s) saved successfully!")
                         st.balloons()
                         st.rerun()
-            
-            # Display last saved records if available
-            if st.session_state.last_saved_records:
-                st.subheader("📋 Last Saved Fee Record(s)")
-                saved_df = pd.DataFrame(st.session_state.last_saved_records)
-                display_df = saved_df[[
-                    "Student Name", "Class Category", "Month", "Monthly Fee", 
-                    "Annual Charges", "Admission Fee", "Received Amount", 
-                    "Payment Method", "Date", "Signature"
-                ]]
-                st.dataframe(
-                    display_df.style.format({
-                        "Monthly Fee": format_currency,
-                        "Annual Charges": format_currency,
-                        "Admission Fee": format_currency,
-                        "Received Amount": format_currency
-                    }),
-                    use_container_width=True
-                )
-    
-    elif menu == "Set Student Fees":
-        if not st.session_state.is_admin:
-            st.error("🚫 Access Denied: You do not have permission to view this page.")
-            st.session_state.menu = "Enter Fees"
-            st.rerun()
-        else:
-            set_student_fees()
-    
-    elif menu in ["View All Records", "Paid & Unpaid Students Record", "Student Yearly Report", "User Management"]:
-        if not st.session_state.is_admin:
-            st.error("🚫 Access Denied: You do not have permission to view this page.")
-            st.session_state.menu = "Enter Fees"
-            st.rerun()
-        else:
-            if menu == "View All Records":
-                st.header("👀 View All Fee Records")
-                
-                df = load_data()
-                if df.empty:
-                    st.info("No fee records found")
-                else:
-                    tabs = st.tabs(["All Records"] + CLASS_CATEGORIES)
-                    
-                    with tabs[0]:
-                        st.subheader("All Fee Records")
-                        
-                        with st.expander("📝 Edit/Delete Records", expanded=False):
-                            st.markdown("## Select a record to edit or delete:")
-                            
-                            edit_index = st.selectbox(
-                                "Select Record",
-                                options=df.index,
-                                format_func=lambda x: f"{df.loc[x, 'Student Name']} - {df.loc[x, 'Class Category']} - {df.loc[x, 'Month']}"
-                            )
-                            
-                            with st.form("edit_form"):
-                                record = df.loc[edit_index]
-                                
-                                col1, col2 = st.columns(2)
-                                with col1:
-                                    edit_name = st.text_input("Student Name", value=record['Student Name'])
-                                    edit_class = st.selectbox("Class Category", CLASS_CATEGORIES, 
-                                                            index=CLASS_CATEGORIES.index(record['Class Category']))
-                                    edit_section = st.text_input("Class Section", value=record['Class Section'])
-                                    edit_month = st.selectbox("Month", [
-                                        "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER",
-                                        "OCTOBER", "NOVEMBER", "DECEMBER", "JANUARY", "FEBRUARY", "MARCH",
-                                        "ANNUAL", "ADMISSION"
-                                    ], index=[
-                                        "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER",
-                                        "OCTOBER", "NOVEMBER", "DECEMBER", "JANUARY", "FEBRUARY", "MARCH",
-                                        "ANNUAL", "ADMISSION"
-                                    ].index(record['Month']))
-                                with col2:
-                                    edit_monthly_fee = st.number_input("Monthly Fee", value=float(record['Monthly Fee'] or 0))
-                                    edit_annual_charges = st.number_input("Annual Charges", value=float(record['Annual Charges'] or 0))
-                                    edit_admission_fee = st.number_input("Admission Fee", value=float(record['Admission Fee'] or 0))
-                                    edit_received = st.number_input("Received Amount", value=float(record['Received Amount'] or 0))
-                                    edit_payment_method = st.selectbox("Payment Method", PAYMENT_METHODS, 
-                                                                     index=PAYMENT_METHODS.index(record['Payment Method'] if pd.notna(record['Payment Method']) else "Cash"))
-                                
-                                try:
-                                    edit_date_value = datetime.strptime(record['Date'], '%d-%m-%Y')
-                                except:
-                                    try:
-                                        edit_date_value = datetime.strptime(record['Date'], '%Y-%m-%d')
-                                    except:
-                                        edit_date_value = datetime.now()
-                                
-                                edit_date = st.date_input("Payment Date", value=edit_date_value)
-                                edit_signature = st.text_input("Received By (Signature)", value=record['Signature'])
-                                edit_academic_year = st.text_input("Academic Year", 
-                                                                 value=record['Academic Year'] if pd.notna(record['Academic Year']) else get_academic_year(edit_date))
-                                
-                                col1, col2, col3 = st.columns(3)
-                                with col1:
-                                    update_btn = st.form_submit_button("🔄 Update Record")
-                                with col2:
-                                    delete_btn = st.form_submit_button("🗑️ Delete Record")
-                                
-                                if update_btn:
-                                    df.loc[edit_index, 'Student Name'] = edit_name
-                                    df.loc[edit_index, 'Class Category'] = edit_class
-                                    df.loc[edit_index, 'Class Section'] = edit_section
-                                    df.loc[edit_index, 'Month'] = edit_month
-                                    df.loc[edit_index, 'Monthly Fee'] = edit_monthly_fee
-                                    df.loc[edit_index, 'Annual Charges'] = edit_annual_charges
-                                    df.loc[edit_index, 'Admission Fee'] = edit_admission_fee
-                                    df.loc[edit_index, 'Received Amount'] = edit_received
-                                    df.loc[edit_index, 'Payment Method'] = edit_payment_method
-                                    df.loc[edit_index, 'Date'] = edit_date.strftime('%d-%m-%Y')
-                                    df.loc[edit_index, 'Signature'] = edit_signature
-                                    df.loc[edit_index, 'Academic Year'] = edit_academic_year
-                                    df.loc[edit_index, 'Entry Timestamp'] = datetime.now().strftime('%d-%m-%Y %H:%M')
-                                    
-                                    if update_data(df):
-                                        st.success("✅ Record updated successfully!")
-                                        st.rerun()
-                                
-                                if delete_btn:
-                                    df = df.drop(index=edit_index)
-                                    if update_data(df):
-                                        st.success("✅ Record deleted successfully!")
-                                        st.rerun()
-                        
-                        st.dataframe(
-                            df.style.apply(style_row, axis=1).format({
-                                'Monthly Fee': format_currency,
-                                'Annual Charges': format_currency,
-                                'Admission Fee': format_currency,
-                                'Received Amount': format_currency
-                            }),
-                            use_container_width=True
-                        )
-                    
-                    for i, category in enumerate(CLASS_CATEGORIES, start=1):
-                        with tabs[i]:
-                            st.subheader(f"{category} Records")
-                            class_df = df[df['Class Category'] == category]
-                            
-                            if not class_df.empty:
-                                st.dataframe(
-                                    class_df.style.apply(style_row, axis=1).format({
-                                        'Monthly Fee': format_currency,
-                                        'Annual Charges': format_currency,
-                                        'Admission Fee': format_currency,
-                                        'Received Amount': format_currency
-                                    }),
-                                    use_container_width=True
-                                )
-                                
-                                st.subheader("Summary")
-                                col1, col2, col3 = st.columns(3)
-                                with col1:
-                                    st.metric("Total Students", class_df['Student Name'].nunique())
-                                with col2:
-                                    st.metric("Total Received", format_currency(class_df['Received Amount'].sum()))
-                                with col3:
-                                    unpaid = class_df[class_df['Monthly Fee'] == 0]['Student Name'].nunique()
-                                    st.metric("Unpaid Students", unpaid, delta_color="inverse")
-                                
-                                st.markdown("Monthly Collection:")
-                                monthly_summary = class_df.groupby('Month')['Received Amount'].sum().reset_index()
-                                st.bar_chart(monthly_summary.set_index('Month'))
-                    
-                    st.divider()
-                    csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        label="📥 Download All Records as CSV",
-                        data=csv,
-                        file_name="all_fee_records.csv",
-                        mime="text/csv"
-                    )
-            
-            elif menu == "Paid & Unpaid Students Record":
-                st.header("✅ Paid & ❌ Unpaid Students Record")
-                df = load_data()
-                
-                if df.empty:
-                    st.info("No fee records found")
-                else:
-                    all_students = df[['ID', 'Student Name', 'Class Category']].drop_duplicates()
-                    
-                    MONTHS = [
-                        "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER",
-                        "OCTOBER", "NOVEMBER", "DECEMBER", "JANUARY", "FEBRUARY", "MARCH"
-                    ]
-                    
-                    all_combinations = pd.DataFrame([
-                        (student['ID'], student['Student Name'], student['Class Category'], month)
-                        for _, student in all_students.iterrows()
-                        for month in MONTHS
-                    ], columns=['ID', "Student Name", "Class Category", "Month"])
-                    
-                    payment_records = df[["ID", "Month", "Monthly Fee", "Received Amount"]]
-                    merged = pd.merge(all_combinations, payment_records, on=["ID", "Month"], how="left")
-                    
-                    fees_data = load_student_fees()
-                    
-                    def get_student_fee(student_id):
-                        if student_id in fees_data:
-                            return fees_data[student_id]["monthly_fee"]
-                        student_payments = df[(df['ID'] == student_id) & (df['Monthly Fee'] > 0)]
-                        if not student_payments.empty:
-                            return student_payments['Monthly Fee'].iloc[-1]
-                        return 2000
-                        
-                    merged['Estimated Monthly Fee'] = merged['ID'].apply(get_student_fee)
-                        
-                    merged['Status'] = merged['Monthly Fee'].apply(
-                        lambda x: "Paid" if pd.notna(x) and x > 0 else "Unpaid"
-                    )
-                    merged['Outstanding'] = merged.apply(
-                        lambda row: 0 if row['Status'] == "Paid" else row['Estimated Monthly Fee'],
-                        axis=1
-                    )
-                        
-                    tabs = st.tabs(MONTHS)
-                        
-                    for i, month in enumerate(MONTHS):
-                        with tabs[i]:
-                            month_data = merged[merged['Month'] == month].copy()
-                                
-                            if not month_data.empty:
-                                total_students = len(month_data)
-                                paid_students = len(month_data[month_data["Status"] == "Paid"])
-                                unpaid_students = total_students - paid_students
-                                total_outstanding = month_data[month_data["Status"] == "Unpaid"]["Outstanding"].sum()
-                                    
-                                col1, col2, col3 = st.columns(3)
-                                with col1:
-                                    st.metric("Total Students", total_students)
-                                with col2:
-                                    st.metric("Paid Students", paid_students)
-                                with col3:
-                                    st.metric("Unpaid Students", unpaid_students, 
-                                            delta=f"Rs. {int(total_outstanding):,}" if total_outstanding > 0 else "Rs. 0")
-                                    
-                                def color_status(val):
-                                    color = "green" if val == "Paid" else "red"
-                                    return f"color: {color}"
-                                    
-                                display_df = month_data[[
-                                    "Student Name", "Class Category", "Estimated Monthly Fee", 
-                                    "Received Amount", "Outstanding", "Status"
-                                ]]
-                                display_df = display_df.rename(columns={
-                                    "Estimated Monthly Fee": "Monthly Fee",
-                                    "Received Amount": "Amount Paid",
-                                    "Outstanding": "Balance Due"
-                                })
-                                    
-                                st.dataframe(
-                                    display_df.style.format({
-                                        "Monthly Fee": format_currency,
-                                        "Amount Paid": format_currency,
-                                        "Balance Due": format_currency
-                                    }).applymap(color_status, subset=["Status"]),
-                                    use_container_width=True
-                                )
-                                        
-                                csv = display_df.to_csv(index=False).encode("utf-8")
-                                # st.download_button(
-                                #     label=f"📥 Download {month} Data",
-                                #     data=csv,
-                                #     file_name=f"{month.lower()}_payment_status.csv",
-                                #     mime="text/csv"
-                                # )
-                            
-                            st.subheader("Overall Payment Status")
-                            student_summary = merged.groupby(["ID", "Student Name", "Class Category"]).agg({
-                                "Status": lambda x: (x == "Unpaid").sum(),
-                                "Outstanding": "sum"
-                            }).reset_index()
-                            student_summary.columns = [
-                                "ID", "Student Name", "Class Category", "Unpaid Months", "Total Outstanding"
-                            ]
-                    
-                            st.dataframe(
-                                student_summary.style.format({
-                                    "Total Outstanding": format_currency
-                                }),
-                                use_container_width=True
-                            )
-                                    
-                            csv = student_summary.to_csv(index=False).encode("utf-8")
-                            # st.download_button(
-                            #    label="📥 Download All Records as CSV",
-                            #    data=csv,
-                            #    file_name="all_fee_records.csv",
-                            #    mime="text/csv",
-                            #    key="download_all_records"  # Add this
-                            # )
-            
-            elif menu == "Student Yearly Report":
-                st.header("📊 Student Yearly Fee Report")
-                
-                df = load_data()
-                if df.empty:
-                    st.info("No fee records found")
-                else:
-                    all_classes = sorted(df["Class Category"].unique())
-                    selected_class = st.selectbox("Select Class", all_classes, key="class_selector")
-                    
-                    class_students = sorted(df[df["Class Category"] == selected_class]["Student Name"].unique())
-                    
-                    if not class_students:
-                        st.warning(f"No students found in {selected_class}")
-                    else:
-                        selected_student = st.selectbox("Select Student", class_students, key="student_selector")
-                        
-                        student_data = df[(df["Student Name"] == selected_student) & 
-                                        (df["Class Category"] == selected_class)]
-                        
-                        if student_data.empty:
-                            st.warning(f"No records found for {selected_student} in {selected_class}")
-                        else:
-                            st.subheader(f"Yearly Report for {selected_student}")
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                st.markdown(f"**Class**: {selected_class}")
-                            with col2:
-                                section = student_data.iloc[0]["Class Section"] if "Class Section" in student_data.columns else "N/A"
-                                st.markdown(f"**Section**: {section if pd.notna(section) else 'N/A'}")
-                            
-                            st.subheader("Fee Summary")
-                            
-                            total_monthly_fee = student_data["Monthly Fee"].sum()
-                            annual_charges = student_data["Annual Charges"].sum()
-                            admission_fee = student_data["Admission Fee"].sum()
-                            total_received = student_data["Received Amount"].sum()
-                            
-                            col1, col2, col3, col4 = st.columns(4)
-                            with col1:
-                                st.metric("Total Monthly Fee", format_currency(total_monthly_fee))
-                            with col2:
-                                st.metric("Annual Charges", format_currency(annual_charges))
-                            with col3:
-                                st.metric("Admission Fee", format_currency(admission_fee))
-                            with col4:
-                                st.metric("Total Received", format_currency(total_received))
-                            
-                            st.subheader("Monthly Fee Details")
-                            
-                            all_months = [
-                                "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER",
-                                "OCTOBER", "NOVEMBER", "DECEMBER", "JANUARY", "FEBRUARY", "MARCH"
-                            ]
-                            
-                            monthly_report = pd.DataFrame({"Month": all_months})
-                            monthly_data = student_data.groupby("Month").agg({
-                                "Monthly Fee": "sum",
-                                "Received Amount": "sum"
-                            }).reset_index()
-                            
-                            monthly_report = monthly_report.merge(monthly_data, on="Month", how="left").fillna(0)
-                            monthly_report["Status"] = monthly_report.apply(
-                                lambda row: "Paid" if row["Monthly Fee"] > 0 else "Unpaid",
-                                axis=1
-                            )
-                            
-                            def color_unpaid(val):
-                                if val == "Unpaid":
-                                    return "color: red"
-                                return ""
-                            
-                            st.dataframe(
-                                monthly_report.style
-                                .applymap(color_unpaid, subset=["Status"])
-                                .format({
-                                    "Monthly Fee": format_currency,
-                                    "Received Amount": format_currency
-                                }),
-                                use_container_width=True
-                            )
-                            
-                            st.subheader("Payment Trends")
-                            st.line_chart(monthly_report.set_index("Month")[["Monthly Fee", "Received Amount"]])
-                            
-                            st.divider()
-                            csv = monthly_report.to_csv(index=False).encode("utf-8")
-                            # st.download_button(
-                            #     label="📥 Download Student Report",
-                            #     data=csv,
-                            #     file_name=f"{selected_student}_fee_report.csv",
-                            #     mime="text/csv"
-                            # )
-            
-            elif menu == "User Management":
-                user_management()
+        
+        # Display last saved records if available
+        if st.session_state.last_saved_records:
+            st.subheader("📋 Last Saved Fee Record(s)")
+            saved_df = pd.DataFrame(st.session_state.last_saved_records)
+            display_df = saved_df[[
+                "Student Name", "Class Category", "Month", "Monthly Fee", 
+                "Annual Charges", "Admission Fee", "Received Amount",
+                "Payment Method", "Date", "Signature"
+            ]]
+            st.dataframe(
+                display_df.style.format({
+                    "Monthly Fee": format_currency,
+                    "Annual Charges": format_currency,
+                    "Admission Fee": format_currency,
+                    "Received Amount": format_currency
+                }),
+                use_container_width=True
+            )
 
 def main():
     initialize_files()
